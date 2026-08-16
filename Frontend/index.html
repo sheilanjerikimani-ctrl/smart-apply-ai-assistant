@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Smart-Apply | AI Resume & Cover Letter Assistant</title>
+<style>
+  :root{
+    --navy:#0f2540;
+    --navy-light:#1a3a5c;
+    --gold:#d4a24c;
+    --bg:#f6f4ef;
+    --card:#ffffff;
+    --text:#1c2733;
+    --muted:#6b7785;
+    --error:#b3261e;
+    --ok:#1e6b3d;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Segoe UI', system-ui, -apple-system, sans-serif;
+    background:var(--bg);
+    color:var(--text);
+  }
+  header{
+    background:var(--navy);
+    color:#fff;
+    padding:28px 24px;
+    text-align:center;
+  }
+  header h1{
+    margin:0 0 6px;
+    font-size:1.6rem;
+    letter-spacing:0.3px;
+  }
+  header p{
+    margin:0;
+    color:#cdd8e3;
+    font-size:0.95rem;
+  }
+  .wrap{
+    max-width:920px;
+    margin:0 auto;
+    padding:28px 20px 60px;
+  }
+  .card{
+    background:var(--card);
+    border-radius:10px;
+    padding:22px 24px;
+    margin-bottom:20px;
+    box-shadow:0 1px 3px rgba(15,37,64,0.08);
+    border:1px solid #e7e2d8;
+  }
+  .card h2{
+    margin:0 0 4px;
+    font-size:1.05rem;
+    color:var(--navy);
+  }
+  .card .sub{
+    color:var(--muted);
+    font-size:0.85rem;
+    margin:0 0 16px;
+  }
+  label{
+    display:block;
+    font-size:0.85rem;
+    font-weight:600;
+    margin:14px 0 6px;
+    color:var(--navy-light);
+  }
+  input[type=text], textarea{
+    width:100%;
+    padding:10px 12px;
+    border:1px solid #d6d1c4;
+    border-radius:6px;
+    font-size:0.92rem;
+    font-family:inherit;
+    background:#fdfcfa;
+  }
+  textarea{ resize:vertical; min-height:90px; }
+  .skill-row{ display:flex; gap:8px; }
+  .skill-row input{ flex:1; }
+  .skill-row button{
+    padding:0 16px;
+    background:var(--navy-light);
+    color:#fff;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    font-size:0.85rem;
+  }
+  .tags{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:10px;
+  }
+  .tag{
+    background:#eef2ea;
+    color:var(--navy);
+    padding:5px 10px;
+    border-radius:999px;
+    font-size:0.8rem;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    border:1px solid #d8e0d2;
+  }
+  .tag button{
+    background:none;
+    border:none;
+    color:var(--error);
+    cursor:pointer;
+    font-size:0.9rem;
+    line-height:1;
+    padding:0;
+  }
+  .primary-btn{
+    width:100%;
+    padding:13px;
+    background:var(--gold);
+    color:var(--navy);
+    border:none;
+    border-radius:6px;
+    font-weight:700;
+    font-size:0.95rem;
+    cursor:pointer;
+    margin-top:18px;
+  }
+  .primary-btn:disabled{
+    background:#dcd3bf;
+    color:#8a8471;
+    cursor:not-allowed;
+  }
+  .msg{
+    font-size:0.85rem;
+    margin-top:10px;
+    padding:10px 12px;
+    border-radius:6px;
+  }
+  .msg.error{ background:#fbeceb; color:var(--error); border:1px solid #f3c9c6;}
+  .msg.ok{ background:#eaf5ee; color:var(--ok); border:1px solid #c8e6d2;}
+  .output-tabs{
+    display:flex;
+    gap:8px;
+    margin-bottom:14px;
+  }
+  .output-tabs button{
+    padding:8px 16px;
+    border:1px solid #d6d1c4;
+    background:#fdfcfa;
+    border-radius:6px;
+    cursor:pointer;
+    font-size:0.85rem;
+    font-weight:600;
+    color:var(--muted);
+  }
+  .output-tabs button.active{
+    background:var(--navy);
+    color:#fff;
+    border-color:var(--navy);
+  }
+  .output-box{
+    white-space:pre-wrap;
+    background:#fbfaf7;
+    border:1px solid #e7e2d8;
+    border-radius:6px;
+    padding:16px;
+    font-size:0.9rem;
+    line-height:1.55;
+    max-height:480px;
+    overflow-y:auto;
+    font-family:'Georgia', serif;
+  }
+  .copy-btn{
+    margin-top:10px;
+    background:none;
+    border:1px solid var(--navy-light);
+    color:var(--navy-light);
+    padding:6px 14px;
+    border-radius:6px;
+    font-size:0.8rem;
+    cursor:pointer;
+  }
+  .hint{ font-size:0.78rem; color:var(--muted); margin-top:4px; }
+  .spinner{
+    display:inline-block;
+    width:14px; height:14px;
+    border:2px solid #fff;
+    border-top-color:transparent;
+    border-radius:50%;
+    animation:spin 0.7s linear infinite;
+    margin-right:8px;
+    vertical-align:-2px;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  footer{
+    text-align:center;
+    color:var(--muted);
+    font-size:0.78rem;
+    padding:20px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Smart-Apply</h1>
+  <p>AI Resume &amp; Cover Letter Assistant</p>
+</header>
+
+<div class="wrap">
+
+  <div class="card">
+    <h2>1. Your Master Profile</h2>
+    <p class="sub">This is your knowledge base. The AI will only use what you put here — it won't invent experience.</p>
+
+    <label for="profileText">Background (education, work history, projects)</label>
+    <textarea id="profileText" placeholder="e.g. BSc Software Engineering, Multimedia University of Kenya (expected 2029). Class Representative and Super Delegate. Generative AI Intern at AnalystLab Africa..."></textarea>
+
+    <label>Skills (add one at a time — update this any time you learn something new)</label>
+    <div class="skill-row">
+      <input type="text" id="skillInput" placeholder="e.g. Prompt Engineering" />
+      <button onclick="addSkill()">Add</button>
+    </div>
+    <div class="tags" id="skillTags"></div>
+  </div>
+
+  <div class="card">
+    <h2>2. Paste the Job Description</h2>
+    <p class="sub">The AI will tailor your resume and cover letter to match this specific role, including its keywords for ATS systems.</p>
+    <textarea id="jobDesc" placeholder="Paste the full job or internship description here..." style="min-height:140px;"></textarea>
+  </div>
+
+  <button class="primary-btn" id="generateBtn" onclick="generate()">Generate Tailored Resume &amp; Cover Letter</button>
+  <div id="statusMsg"></div>
+
+  <div class="card" id="resultsCard" style="display:none;">
+    <div class="output-tabs">
+      <button id="tabResume" class="active" onclick="showTab('resume')">Resume</button>
+      <button id="tabCover" onclick="showTab('cover')">Cover Letter</button>
+    </div>
+    <div class="output-box" id="outputText"></div>
+    <button class="copy-btn" onclick="copyOutput()">Copy to clipboard</button>
+  </div>
+
+</div>
+
+<footer>Built to replace manual job application</footer>
+
+<script>
+  let skills = [];
+  let resumeText = "";
+  let coverText = "";
+  let activeTab = "resume";
+  const BACKEND_URL = "http://localhost:3000/api/generate";
+
+  window.onload = () => {
+    const savedProfile = localStorage.getItem("smartapply_profile");
+    const savedSkills = localStorage.getItem("smartapply_skills");
+    if (savedProfile) document.getElementById("profileText").value = savedProfile;
+    if (savedSkills) { skills = JSON.parse(savedSkills); renderSkills(); }
+  };
+
+  document.getElementById("profileText").addEventListener("input", (e) => {
+    localStorage.setItem("smartapply_profile", e.target.value);
+  });
+
+  function addSkill() {
+    const input = document.getElementById("skillInput");
+    const val = input.value.trim();
+    if (!val) return;
+    skills.push(val);
+    input.value = "";
+    renderSkills();
+    localStorage.setItem("smartapply_skills", JSON.stringify(skills));
+  }
+
+  function removeSkill(i) {
+    skills.splice(i, 1);
+    renderSkills();
+    localStorage.setItem("smartapply_skills", JSON.stringify(skills));
+  }
+
+  function renderSkills() {
+    const box = document.getElementById("skillTags");
+    box.innerHTML = "";
+    skills.forEach((s, i) => {
+      const tag = document.createElement("div");
+      tag.className = "tag";
+      tag.innerHTML = `${s} <button onclick="removeSkill(${i})">&times;</button>`;
+      box.appendChild(tag);
+    });
+  }
+
+  function showMsg(text, type) {
+    document.getElementById("statusMsg").innerHTML = `<div class="msg ${type}">${text}</div>`;
+  }
+
+  function showTab(tab) {
+    activeTab = tab;
+    document.getElementById("tabResume").classList.toggle("active", tab === "resume");
+    document.getElementById("tabCover").classList.toggle("active", tab === "cover");
+    document.getElementById("outputText").textContent = tab === "resume" ? resumeText : coverText;
+  }
+
+  function copyOutput() {
+    const text = activeTab === "resume" ? resumeText : coverText;
+    navigator.clipboard.writeText(text);
+    showMsg("Copied to clipboard.", "ok");
+  }
+
+  async function generate() {
+    const profile = document.getElementById("profileText").value.trim();
+    const jobDesc = document.getElementById("jobDesc").value.trim();
+    const btn = document.getElementById("generateBtn");
+
+    if (!profile) return showMsg("Please fill in your Master Profile before generating.", "error");
+    if (skills.length === 0) return showMsg("Add at least one skill to your profile.", "error");
+    if (!jobDesc) return showMsg("Please paste a job description to tailor your application.", "error");
+
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner"></span>Generating...`;
+    document.getElementById("statusMsg").innerHTML = "";
+
+    try {
+      const response = await fetch(BACKEND_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ profile, skills, jobDesc })
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Request failed.");
+
+      resumeText = data.resumeText;
+      coverText = data.coverText;
+
+      document.getElementById("resultsCard").style.display = "block";
+      showTab("resume");
+      showMsg("Generated successfully. Review both tabs before submitting your application.", "ok");
+    } catch (err) {
+      showMsg("Something went wrong: " + err.message, "error");
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = "Generate Tailored Resume &amp; Cover Letter";
+    }
+  }
+</script>
+
+</body>
+</html>
