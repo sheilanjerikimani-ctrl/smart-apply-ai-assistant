@@ -3,6 +3,9 @@
 **Programme:** AnalystLab Africa — Generative AI Internship
 **Week 2:** Building AI-Powered Applications with Large Language Models (LLMs)
 **Author:** Sheila Kimani
+## Live Demo
+
+🔗 [https://smart-apply-ai-assistant.vercel.app/](https://smart-apply-ai-assistant.vercel.app/)
 
 ## What This Is
 
